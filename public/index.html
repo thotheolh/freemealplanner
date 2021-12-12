@@ -42,6 +42,21 @@
 					style="width: 146px;"></td>
 			</tr>
 			<tr>
+				<td>Nutrition &amp; Goal:</td>
+				<td><select id="goaltype" name="goaltype" style="width: 150px;">
+						<option value="0" selected="">No Change (Generic)</option>
+						<option value="1">Add 15% Caloric Surplus (Bulk)</option>
+						<option value="2">Add 10% Caloric Surplus (Bulk)</option>
+						<option value="3">Add 5% Caloric Surplus (Bulk)</option>
+						<option value="4">Reduce 25% Caloric Intake (Aggressive
+							Lean)</option>
+						<option value="5">Reduce 20% Caloric Intake (Lean)</option>
+						<option value="6">Reduce 15% Caloric Intake (Lean)</option>
+						<option value="7">Reduce 10% Caloric Intake (Lean)</option>
+						<option value="8">Reduce 5% Caloric Intake (Lean)</option>
+				</select></td>
+			</tr>
+			<tr>
 				<td>Nutrition &amp; Diet:</td>
 				<td><select id="nutritype" name="nutritype"
 					style="width: 150px;">
@@ -103,12 +118,13 @@
 		<br>
 		<hr>
 		<div>
-			<label>Your BMR: </label>
-			<label id="bmrRes"></label>			
+			<label>Your BMR: </label> <label id="bmrRes"></label>
 		</div>
 		<div>
-			<label>Your AMR/TDEE: </label>
-			<label id="amrRes"></label>
+			<label>Your AMR/TDEE: </label> <label id="amrRes"></label>
+		</div>
+		<div>
+			<label>Your Adjusted AMR/TDEE: </label> <label id="amrAdjustRes"></label>
 		</div>
 	</center>
 </body>
@@ -131,6 +147,9 @@
 
 		// Get Weekly Cardio
 		var weeklyCardio = document.getElementById("cardio").value;
+		
+		// Get Goal Type
+		var goalType = document.getElementById("goaltype").value;
 
 		var bmr = calculateBMR(metrics, gender, weight, height, age);
 		if (bmr != -1) {
@@ -140,6 +159,11 @@
 		var amr = calculateAMR(bmr, weeklyCardio);
 		if (amr != -1) {
 			document.getElementById("amrRes").innerHTML = amr;
+		}
+		
+		var amrAdjusted = calculateGoal(amr, goalType);
+		if (amrAdjusted != -1) {
+			document.getElementById("amrAdjustRes").innerHTML = amrAdjusted;
 		}
 	}
 
@@ -160,10 +184,8 @@
 		if (gender == 'M' || gender == 'F') {
 			var baseBMR = 10 * weightFinal + 6.25 * heightFinal - 5 * age;
 			if (gender == 'M') {
-				alert("Male");
 				bmr = baseBMR + 5;
 			} else if (gender == 'F') {
-				alert("Female");
 				bmr = baseBMR + 161;
 			}
 		} else {
@@ -196,8 +218,26 @@
 		}
 	}
 
-	function calculateTDEE() {
-
+	function calculateGoal(amr, goal) {		
+		if (goal == '0') {
+			return amr;
+		} else if (goal == '1') {
+			return amr * 1.15;
+		} else if (goal == '2') {
+			return amr * 1.10;
+		} else if (goal == '3') {
+			return amr * 1.05;
+		} else if (goal == '4') {
+			return amr * 0.75;
+		} else if (goal == '5') {
+			return amr * 0.80;
+		} else if (goal == '6') {
+			return amr * 0.85;
+		} else if (goal == '7') {
+			return amr * 0.90;
+		} else if (goal == '8') {
+			return amr * 0.95;
+		}
 	}
 </script>
 </html>
