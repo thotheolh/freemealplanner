@@ -10,37 +10,41 @@
 		<table>
 			<tr>
 				<td>Gender:</td>
-				<td><select name="gender" id="gender" style="width:150px;">
+				<td><select name="gender" id="gender" style="width: 150px;">
 						<option value="M">Male</option>
 						<option value="F">Female</option>
 				</select></td>
 			</tr>
 			<tr>
 				<td>Metrics:</td>
-				<td><select name="metrics" id="metrics" style="width:150px;">
+				<td><select name="metrics" id="metrics" style="width: 150px;">
 						<option value="US">LBs and Inches</option>
-						<option value="UK">KGs and CMs</option>
+						<option value="UK" selected="">KGs and CMs</option>
 				</select></td>
 			</tr>
 			<tr>
 				<td>Weight:</td>
-				<td><input type="text" id="weight" name="weight" style="width:146px;"></td>
+				<td><input type="text" id="weight" name="weight"
+					style="width: 146px;"></td>
 			</tr>
 			<tr>
 				<td>Height:</td>
-				<td><input type="text" id="height" name="height" style="width:146px;"></td>
+				<td><input type="text" id="height" name="height"
+					style="width: 146px;"></td>
 			</tr>
 			<tr>
 				<td>Age:</td>
-				<td><input type="text" id="age" name=age style="width:146px;"></td>
+				<td><input type="text" id="age" name=age style="width: 146px;"></td>
 			</tr>
 			<tr>
 				<td>Meals Per Day:</td>
-				<td><input type="text" id="meals" name=meals style="width:146px;"></td>
+				<td><input type="text" id="meals" name=meals
+					style="width: 146px;"></td>
 			</tr>
 			<tr>
 				<td>Nutrition &amp; Diet:</td>
-				<td><select id="nutritype" name="nutritype" style="width:150px;">
+				<td><select id="nutritype" name="nutritype"
+					style="width: 150px;">
 						<option value="nutri0">Keto</option>
 						<option value="nutri1" selected="">Low Carb</option>
 						<option value="nutri2">Medium Carb</option>
@@ -61,24 +65,28 @@
 						<option value="nutri17">Quarantine Meal Plan</option>
 				</select></td>
 			</tr>
+			<!--
 			<tr>
 				<td>Sleep Time:</td>
-				<td><input type="text" id="sleep" name=sleep style="width:146px;"></td>
+				<td><input type="text" id="sleep" name=sleep
+					style="width: 146px;"></td>
 			</tr>
+			-->
 			<tr>
 				<td>Weekly Cardio:</td>
-				<td><select name="cardio" id="cardio" style="width:150px;">
-						<option value="cardio0">Less than 1 hour</option>
-						<option value="cardio1">1 to 3 hours</option>
-						<option value="cardio2">3 to 5 hours</option>
-						<option value="cardio3">5 to 6 hours</option>
-						<option value="cardio4">More than 6 hours</option>
+				<td><select name="cardio" id="cardio" style="width: 150px;">
+						<option value="0">Less than 1 hour</option>
+						<option value="1">1 to 3 hours</option>
+						<option value="2">3 to 5 hours</option>
+						<option value="3">5 to 6 hours</option>
+						<option value="4">More than 6 hours</option>
 				</select></td>
 				<td>(Run/Jog/Walk)</td>
 			</tr>
 			<tr>
 				<td>Estimated Bodyfat:</td>
-				<td><input type="text" id="fats" name=fats style="width:146px;"></td>
+				<td><input type="text" id="fats" name=fats
+					style="width: 146px;"></td>
 				<td>Percent (%)</td>
 			</tr>
 			<tr>
@@ -87,12 +95,109 @@
 			<tr>
 				<td colspan="3">
 					<center>
-						<button type="button" onclick="alert('Hello world!')">GO
-							!</button>
+						<button type="button" onclick="executeScript()">GO !</button>
 					</center>
 				</td>
 			</tr>
 		</table>
+		<br>
+		<hr>
+		<div>
+			<label>Your BMR: </label>
+			<label id="bmrRes"></label>			
+		</div>
+		<div>
+			<label>Your AMR/TDEE: </label>
+			<label id="amrRes"></label>
+		</div>
 	</center>
 </body>
+<script>
+	function executeScript() {
+		// Get Gender
+		var gender = document.getElementById("gender").value;
+
+		// Get Metrics
+		var metrics = document.getElementById("metrics").value;
+
+		// Get Weight
+		var weight = document.getElementById("weight").value;
+
+		// Get Height
+		var height = document.getElementById("height").value;
+
+		// Get Age
+		var age = document.getElementById("age").value;
+
+		// Get Weekly Cardio
+		var weeklyCardio = document.getElementById("cardio").value;
+
+		var bmr = calculateBMR(metrics, gender, weight, height, age);
+		if (bmr != -1) {
+			document.getElementById("bmrRes").innerHTML = bmr;
+		}
+		
+		var amr = calculateAMR(bmr, weeklyCardio);
+		if (amr != -1) {
+			document.getElementById("amrRes").innerHTML = amr;
+		}
+	}
+
+	// For men: BMR = 10 x weight (kg) + 6.25 x height (cm) – 5 x age (years) + 5
+	// For women: BMR = 10 x weight (kg) + 6.25 x height (cm) – 5 x age (years) – 161
+	function calculateBMR(metrics, gender, weight, height, age) {
+		var heightFinal, weightFinal, bmr;
+
+		// Convert metrics to UK (KG and CM) type
+		if (metrics == 'US') {
+			heightFinal = height * 2.54;
+			weightFinal = weight * 0.45359237;
+		} else {
+			heightFinal = height;
+			weightFinal = weight;
+		}
+
+		if (gender == 'M' || gender == 'F') {
+			var baseBMR = 10 * weightFinal + 6.25 * heightFinal - 5 * age;
+			if (gender == 'M') {
+				alert("Male");
+				bmr = baseBMR + 5;
+			} else if (gender == 'F') {
+				alert("Female");
+				bmr = baseBMR + 161;
+			}
+		} else {
+			alert("Unknown gender");
+			return -1;
+		}
+
+		return bmr;
+	}
+
+	function calculateAMR(bmr, activity) {
+		if (bmr == -1) {
+			return -1;
+		}
+		
+		if (activity < 0 || activity > 4) {
+			return -1;
+		}
+		
+		if (activity == 0) {
+			return bmr * 1.2;
+		} else if (activity == 1) {
+			return bmr * 1.375;
+		} else if (activity == 2) {
+			return bmr * 1.55;
+		} else if (activity == 3) {
+			return bmr * 1.725;
+		} else if (activity == 4) {
+			return bmr * 1.9;
+		}
+	}
+
+	function calculateTDEE() {
+
+	}
+</script>
 </html>
