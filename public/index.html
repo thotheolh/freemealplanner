@@ -126,9 +126,29 @@
 		<div>
 			<label>Your Adjusted AMR/TDEE: </label> <label id="amrAdjustRes"></label>
 		</div>
+		<hr>
+		<p>
+			<b><u>Calculate Your Weekly Meals</u></b>
+		</p>
+		<table id="nutriplanner" name="nutriplanner">
+		</table>
+		<br>
+		<div>
+			<label>Total Calories In All Meals: </label> <label id="allMealsRes"></label>
+		</div>
+		<br>
+		<div>
+			<label id="mealsRemarks"></label>
+		</div>
 	</center>
 </body>
 <script>
+	const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+	const mealElementsArray = [];
+	var amr = 0;
+	var amrAdjusted = 0;
+	var mealAmts = 0;
+
 	function executeScript() {
 		// Get Gender
 		var gender = document.getElementById("gender").value;
@@ -150,21 +170,34 @@
 		
 		// Get Goal Type
 		var goalType = document.getElementById("goaltype").value;
+		
+		// Get daily meals
+		mealAmts = document.getElementById("meals").value;
 
 		var bmr = calculateBMR(metrics, gender, weight, height, age);
 		if (bmr != -1) {
-			document.getElementById("bmrRes").innerHTML = bmr;
+			document.getElementById("bmrRes").innerHTML = bmr + " kcal";
 		}
 		
-		var amr = calculateAMR(bmr, weeklyCardio);
+		amr = calculateAMR(bmr, weeklyCardio);
 		if (amr != -1) {
-			document.getElementById("amrRes").innerHTML = amr;
+			document.getElementById("amrRes").innerHTML = amr + " kcal";
 		}
 		
-		var amrAdjusted = calculateGoal(amr, goalType);
+		amrAdjusted = calculateGoal(amr, goalType);
 		if (amrAdjusted != -1) {
-			document.getElementById("amrAdjustRes").innerHTML = amrAdjusted;
+			document.getElementById("amrAdjustRes").innerHTML = amrAdjusted + " kcal";
 		}
+		
+		if (mealAmts <= 0) {
+			alert("At least 1 daily meal is required !");
+		}
+		
+		if (mealAmts > 10) {
+			alert("More than 10 daily meals not supported !");
+		}
+		
+		createNutritionalInputTable();
 	}
 
 	// For men: BMR = 10 x weight (kg) + 6.25 x height (cm) – 5 x age (years) + 5
@@ -237,6 +270,110 @@
 			return amr * 0.90;
 		} else if (goal == '8') {
 			return amr * 0.95;
+		}
+	}
+	
+	function createNutritionalInputTable() {
+		// Get 'nutriplanner' id
+		var nutriplanner = document.getElementById("nutriplanner");
+		    
+		while (nutriplanner.lastChild) {
+		   	nutriplanner.removeChild(nutriplanner.lastChild);
+		}
+		
+		// Create 7 columns to represent 7 days of the week
+		var mondayTH = document.createElement("th");
+		mondayTH.innerHTML = "Monday";
+		mondayTH.setAttribute("id", "mondayTH");
+		mondayTH.setAttribute("name", "mondayTH");
+		
+		var tuesdayTH = document.createElement("th");
+		tuesdayTH.innerHTML = "Tuesday";
+		tuesdayTH.setAttribute("id", "tuesdayTH");
+		tuesdayTH.setAttribute("name", "tuesdayTH");
+		
+		var wednesdayTH = document.createElement("th");
+		wednesdayTH.innerHTML = "Wednesday";
+		wednesdayTH.setAttribute("id", "wednesdayTH");
+		wednesdayTH.setAttribute("name", "wednesdayTH");
+		
+		var thursdayTH = document.createElement("th");
+		thursdayTH.innerHTML = "Thursday";
+		thursdayTH.setAttribute("id", "thursdayTH");
+		thursdayTH.setAttribute("name", "thursdayTH");
+		
+		var fridayTH = document.createElement("th");
+		fridayTH.innerHTML = "Friday";
+		fridayTH.setAttribute("id", "fridayTH");
+		fridayTH.setAttribute("name", "fridayTH");
+		
+		var saturdayTH = document.createElement("th");
+		saturdayTH.innerHTML = "Saturday";
+		saturdayTH.setAttribute("id", "saturdayTH");
+		saturdayTH.setAttribute("name", "saturdayTH");
+		
+		var sundayTH = document.createElement("th");
+		sundayTH.innerHTML = "Sunday";
+		sundayTH.setAttribute("id", "sundayTH");
+		sundayTH.setAttribute("name", "sundayTH");
+		
+		nutriplanner.append(mondayTH);
+		nutriplanner.append(tuesdayTH);
+		nutriplanner.append(wednesdayTH);
+		nutriplanner.append(thursdayTH);
+		nutriplanner.append(fridayTH);
+		nutriplanner.append(saturdayTH);
+		nutriplanner.append(sundayTH);
+		
+		// Create array elements to store meals
+		if (mealElementsArray.length > 0) {
+			mealElementsArray = [];	
+		}		
+		
+		var currTtlElements = 0;
+		
+		// Each column has X amount of meals a day
+		for (var i = 0; i < mealAmts; i++) {
+			var tr = document.createElement("tr");
+			var dayIndex = i + 1;
+			
+			// Create rows for meal 1 to Meal X of all days for 7 days
+			for (var j = 0; j < 7; j++) {
+				var td = document.createElement("td");
+				var mealElement = document.createElement("input");
+				var mealIdName = weekdays[j] + "Meal" + i;
+				mealElement.setAttribute("id", mealIdName);
+				mealElement.setAttribute("name", mealIdName);
+				mealElement.setAttribute("onkeyup", "calcNutritionInput()");
+				mealElement.setAttribute("placeholder", "Daily Meal #" + dayIndex + " calories (kcal)");
+				td.append(mealElement);
+				tr.append(td);
+				mealElementsArray[currTtlElements] = mealElement;
+				currTtlElements++;				
+			}			
+			nutriplanner.append(tr);
+		}		
+		
+	}
+	
+	function calcNutritionInput() {
+		var totalNutritionVal = parseInt(0);
+		for (var i = 0; i < mealElementsArray.length; i++) {			
+			if (!(mealElementsArray[i].value === "")) {
+				totalNutritionVal += parseInt(mealElementsArray[i].value);
+			}
+		}
+		
+		document.getElementById("allMealsRes").innerHTML = totalNutritionVal + " kcal";
+		
+		var totalRequiredAmr = amrAdjusted * 7;
+		
+		var amrAdjustedMin = totalRequiredAmr / 0.9;
+		
+		if (totalNutritionVal > totalRequiredAmr) {
+			document.getElementById("mealsRemarks").innerHTML = "TOO MUCH GOOD FOOD !!!";
+		} else if (totalNutritionVal < amrAdjustedMin) {
+			document.getElementById("mealsRemarks").innerHTML = "EAT MORE HEALTHY FOOD !!!";
 		}
 	}
 </script>
