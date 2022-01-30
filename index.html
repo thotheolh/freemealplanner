@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Free Meal Planner</title>
+</head>
+<body>
+	<center>
+		<h1>Free Meal Planner</h1>
+		<table>
+			<tr>
+				<td>Gender:</td>
+				<td><select name="gender" id="gender" style="width: 150px;">
+						<option value="M">Male</option>
+						<option value="F">Female</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td>Metrics:</td>
+				<td><select name="metrics" id="metrics" style="width: 150px;">
+						<option value="US">LBs and Inches</option>
+						<option value="UK" selected="">KGs and CMs</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td>Weight:</td>
+				<td><input type="text" id="weight" name="weight"
+					style="width: 146px;"></td>
+			</tr>
+			<tr>
+				<td>Height:</td>
+				<td><input type="text" id="height" name="height"
+					style="width: 146px;"></td>
+			</tr>
+			<tr>
+				<td>Age:</td>
+				<td><input type="text" id="age" name=age style="width: 146px;"></td>
+			</tr>
+			<tr>
+				<td>Meals Per Day:</td>
+				<td><input type="text" id="meals" name=meals
+					style="width: 146px;"></td>
+			</tr>
+			<tr>
+				<td>Nutrition &amp; Goal:</td>
+				<td><select id="goaltype" name="goaltype" style="width: 150px;">
+						<option value="0" selected="">No Change (Generic)</option>
+						<option value="1">Add 15% Caloric Surplus (Bulk)</option>
+						<option value="2">Add 10% Caloric Surplus (Bulk)</option>
+						<option value="3">Add 5% Caloric Surplus (Bulk)</option>
+						<option value="4">Reduce 25% Caloric Intake (Aggressive
+							Lean)</option>
+						<option value="5">Reduce 20% Caloric Intake (Lean)</option>
+						<option value="6">Reduce 15% Caloric Intake (Lean)</option>
+						<option value="7">Reduce 10% Caloric Intake (Lean)</option>
+						<option value="8">Reduce 5% Caloric Intake (Lean)</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td>Nutrition &amp; Diet:</td>
+				<td><select id="nutritype" name="nutritype"
+					style="width: 150px;">
+						<option value="nutri0">Keto</option>
+						<option value="nutri1" selected="">Low Carb</option>
+						<option value="nutri2">Medium Carb</option>
+						<option value="nutri3">Vegetarian</option>
+						<option value="nutri4">Vegan-Health</option>
+						<option value="nutri5">Vegan-Bodybuilding</option>
+						<option value="nutri6">Clean Bulk</option>
+						<option value="nutri7">Fat Loss</option>
+						<option value="nutri8">Fat Carb Cycling (FCC)</option>
+						<option value="nutri9">Carb Tapering</option>
+						<option value="nutri10">Detox-cleanse-diet</option>
+						<option value="nutri11">Lean Gains</option>
+						<option value="nutri12">Gluten Free</option>
+						<option value="nutri13">Broke Bodybuilder</option>
+						<option value="nutri14">Veg Copy No Shakes</option>
+						<option value="nutri15">Veg 3 With Shake</option>
+						<option value="nutri16">Veg 5 With Shake</option>
+						<option value="nutri17">Quarantine Meal Plan</option>
+				</select></td>
+			</tr>
+			<!--
+			<tr>
+				<td>Sleep Time:</td>
+				<td><input type="text" id="sleep" name=sleep
+					style="width: 146px;"></td>
+			</tr>
+			-->
+			<tr>
+				<td>Weekly Cardio:</td>
+				<td><select name="cardio" id="cardio" style="width: 150px;">
+						<option value="0">Less than 1 hour</option>
+						<option value="1">1 to 3 hours</option>
+						<option value="2">3 to 5 hours</option>
+						<option value="3">5 to 6 hours</option>
+						<option value="4">More than 6 hours</option>
+				</select></td>
+				<td>(Run/Jog/Walk)</td>
+			</tr>
+			<tr>
+				<td>Estimated Bodyfat:</td>
+				<td><input type="text" id="fats" name=fats
+					style="width: 146px;"></td>
+				<td>Percent (%)</td>
+			</tr>
+			<tr>
+				<td colspan="3" height="10px"></td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<center>
+						<button type="button" onclick="executeScript()">GO !</button>
+					</center>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<hr>
+		<div>
+			<label>Your BMR: </label> <label id="bmrRes"></label>
+		</div>
+		<div>
+			<label>Your AMR/TDEE: </label> <label id="amrRes"></label>
+		</div>
+		<div>
+			<label>Your Adjusted AMR/TDEE: </label> <label id="amrAdjustRes"></label>
+		</div>
+		<hr>
+		<p>
+			<b><u>Calculate Your Weekly Meals</u></b>
+		</p>
+		<table id="nutriplanner" name="nutriplanner">
+		</table>
+		<br>
+		<div>
+			<label>Total Calories In All Meals: </label> <label id="allMealsRes"></label>
+		</div>
+		<br>
+		<div>
+			<label id="mealsRemarks"></label>
+		</div>
+	</center>
+</body>
+<script>
+	const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+	const mealElementsArray = [];
+	var amr = 0;
+	var amrAdjusted = 0;
+	var mealAmts = 0;
+
+	function executeScript() {
+		// Get Gender
+		var gender = document.getElementById("gender").value;
+
+		// Get Metrics
+		var metrics = document.getElementById("metrics").value;
+
+		// Get Weight
+		var weight = document.getElementById("weight").value;
+
+		// Get Height
+		var height = document.getElementById("height").value;
+
+		// Get Age
+		var age = document.getElementById("age").value;
+
+		// Get Weekly Cardio
+		var weeklyCardio = document.getElementById("cardio").value;
+		
+		// Get Goal Type
+		var goalType = document.getElementById("goaltype").value;
+		
+		// Get daily meals
+		mealAmts = document.getElementById("meals").value;
+
+		var bmr = calculateBMR(metrics, gender, weight, height, age);
+		if (bmr != -1) {
+			document.getElementById("bmrRes").innerHTML = bmr + " kcal";
+		}
+		
+		amr = calculateAMR(bmr, weeklyCardio);
+		if (amr != -1) {
+			document.getElementById("amrRes").innerHTML = amr + " kcal";
+		}
+		
+		amrAdjusted = calculateGoal(amr, goalType);
+		if (amrAdjusted != -1) {
+			document.getElementById("amrAdjustRes").innerHTML = amrAdjusted + " kcal";
+		}
+		
+		if (mealAmts <= 0) {
+			alert("At least 1 daily meal is required !");
+		}
+		
+		if (mealAmts > 10) {
+			alert("More than 10 daily meals not supported !");
+		}
+		
+		createNutritionalInputTable();
+	}
+
+	// For men: BMR = 10 x weight (kg) + 6.25 x height (cm) – 5 x age (years) + 5
+	// For women: BMR = 10 x weight (kg) + 6.25 x height (cm) – 5 x age (years) – 161
+	function calculateBMR(metrics, gender, weight, height, age) {
+		var heightFinal, weightFinal, bmr;
+
+		// Convert metrics to UK (KG and CM) type
+		if (metrics == 'US') {
+			heightFinal = height * 2.54;
+			weightFinal = weight * 0.45359237;
+		} else {
+			heightFinal = height;
+			weightFinal = weight;
+		}
+
+		if (gender == 'M' || gender == 'F') {
+			var baseBMR = 10 * weightFinal + 6.25 * heightFinal - 5 * age;
+			if (gender == 'M') {
+				bmr = baseBMR + 5;
+			} else if (gender == 'F') {
+				bmr = baseBMR + 161;
+			}
+		} else {
+			alert("Unknown gender");
+			return -1;
+		}
+
+		return bmr;
+	}
+
+	function calculateAMR(bmr, activity) {
+		if (bmr == -1) {
+			return -1;
+		}
+		
+		if (activity < 0 || activity > 4) {
+			return -1;
+		}
+		
+		if (activity == 0) {
+			return bmr * 1.2;
+		} else if (activity == 1) {
+			return bmr * 1.375;
+		} else if (activity == 2) {
+			return bmr * 1.55;
+		} else if (activity == 3) {
+			return bmr * 1.725;
+		} else if (activity == 4) {
+			return bmr * 1.9;
+		}
+	}
+
+	function calculateGoal(amr, goal) {		
+		if (goal == '0') {
+			return amr;
+		} else if (goal == '1') {
+			return amr * 1.15;
+		} else if (goal == '2') {
+			return amr * 1.10;
+		} else if (goal == '3') {
+			return amr * 1.05;
+		} else if (goal == '4') {
+			return amr * 0.75;
+		} else if (goal == '5') {
+			return amr * 0.80;
+		} else if (goal == '6') {
+			return amr * 0.85;
+		} else if (goal == '7') {
+			return amr * 0.90;
+		} else if (goal == '8') {
+			return amr * 0.95;
+		}
+	}
+	
+	function createNutritionalInputTable() {
+		// Get 'nutriplanner' id
+		var nutriplanner = document.getElementById("nutriplanner");
+		    
+		while (nutriplanner.lastChild) {
+		   	nutriplanner.removeChild(nutriplanner.lastChild);
+		}
+		
+		// Create 7 columns to represent 7 days of the week
+		var mondayTH = document.createElement("th");
+		mondayTH.innerHTML = "Monday";
+		mondayTH.setAttribute("id", "mondayTH");
+		mondayTH.setAttribute("name", "mondayTH");
+		
+		var tuesdayTH = document.createElement("th");
+		tuesdayTH.innerHTML = "Tuesday";
+		tuesdayTH.setAttribute("id", "tuesdayTH");
+		tuesdayTH.setAttribute("name", "tuesdayTH");
+		
+		var wednesdayTH = document.createElement("th");
+		wednesdayTH.innerHTML = "Wednesday";
+		wednesdayTH.setAttribute("id", "wednesdayTH");
+		wednesdayTH.setAttribute("name", "wednesdayTH");
+		
+		var thursdayTH = document.createElement("th");
+		thursdayTH.innerHTML = "Thursday";
+		thursdayTH.setAttribute("id", "thursdayTH");
+		thursdayTH.setAttribute("name", "thursdayTH");
+		
+		var fridayTH = document.createElement("th");
+		fridayTH.innerHTML = "Friday";
+		fridayTH.setAttribute("id", "fridayTH");
+		fridayTH.setAttribute("name", "fridayTH");
+		
+		var saturdayTH = document.createElement("th");
+		saturdayTH.innerHTML = "Saturday";
+		saturdayTH.setAttribute("id", "saturdayTH");
+		saturdayTH.setAttribute("name", "saturdayTH");
+		
+		var sundayTH = document.createElement("th");
+		sundayTH.innerHTML = "Sunday";
+		sundayTH.setAttribute("id", "sundayTH");
+		sundayTH.setAttribute("name", "sundayTH");
+		
+		nutriplanner.append(mondayTH);
+		nutriplanner.append(tuesdayTH);
+		nutriplanner.append(wednesdayTH);
+		nutriplanner.append(thursdayTH);
+		nutriplanner.append(fridayTH);
+		nutriplanner.append(saturdayTH);
+		nutriplanner.append(sundayTH);
+		
+		// Create array elements to store meals
+		if (mealElementsArray.length > 0) {
+			mealElementsArray = [];	
+		}		
+		
+		var currTtlElements = 0;
+		
+		// Each column has X amount of meals a day
+		for (var i = 0; i < mealAmts; i++) {
+			var tr = document.createElement("tr");
+			var dayIndex = i + 1;
+			
+			// Create rows for meal 1 to Meal X of all days for 7 days
+			for (var j = 0; j < 7; j++) {
+				var td = document.createElement("td");
+				var mealElement = document.createElement("input");
+				var mealIdName = weekdays[j] + "Meal" + i;
+				mealElement.setAttribute("id", mealIdName);
+				mealElement.setAttribute("name", mealIdName);
+				mealElement.setAttribute("onkeyup", "calcNutritionInput()");
+				mealElement.setAttribute("placeholder", "Daily Meal #" + dayIndex + " calories (kcal)");
+				td.append(mealElement);
+				tr.append(td);
+				mealElementsArray[currTtlElements] = mealElement;
+				currTtlElements++;				
+			}			
+			nutriplanner.append(tr);
+		}		
+		
+	}
+	
+	function calcNutritionInput() {
+		var totalNutritionVal = parseInt(0);
+		for (var i = 0; i < mealElementsArray.length; i++) {			
+			if (!(mealElementsArray[i].value === "")) {
+				totalNutritionVal += parseInt(mealElementsArray[i].value);
+			}
+		}
+		
+		document.getElementById("allMealsRes").innerHTML = totalNutritionVal + " kcal";
+		
+		var totalRequiredAmr = amrAdjusted * 7;
+		
+		var amrAdjustedMin = totalRequiredAmr / 0.9;
+		
+		if (totalNutritionVal > totalRequiredAmr) {
+			document.getElementById("mealsRemarks").innerHTML = "TOO MUCH GOOD FOOD !!!";
+		} else if (totalNutritionVal < amrAdjustedMin) {
+			document.getElementById("mealsRemarks").innerHTML = "EAT MORE HEALTHY FOOD !!!";
+		}
+	}
+</script>
+</html>
